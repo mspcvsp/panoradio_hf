@@ -68,23 +68,31 @@ def get_model_checkpoint_dir(net_arch_id,
     """
     path_elems = ["/home",
                   os.getenv("USER"),
+                  "panoradoi_hf",
                   kwargs.get("model_checkpoint_dir", "ModelCheckpoints"),
-                  "panorado_hf",
                   net_arch_id]
 
     return Path(*path_elems)
 
 
+def get_mlflow_tracking_uri():
+
+    mlflow_tracking_uri =\
+        Path(*["/home",
+               os.getenv("USER"),
+               "ml-runs"])
+
+    return mlflow_tracking_uri
+
+
 def initialize_pl_trainer(net_arch_id,
                           **kwargs):
-    
+
     patience = kwargs.get("patience", 5)
     min_delta = kwargs.get("min_delta", 0.01)
 
     mlflow_tracking_uri = kwargs.get("mlflow_tracking_uri",
-                                     Path(*["/home",
-                                            os.getenv("USER"),
-                                            "ml-runs"]))
+                                     get_mlflow_tracking_uri())
 
     checkpoint_callback = ModelCheckpoint(
         dirpath=get_model_checkpoint_dir(net_arch_id,
