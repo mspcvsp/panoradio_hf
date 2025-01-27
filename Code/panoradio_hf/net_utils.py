@@ -68,7 +68,7 @@ def get_model_checkpoint_dir(net_arch_id,
     """
     path_elems = ["/home",
                   os.getenv("USER"),
-                  "panoradoi_hf",
+                  "panoradio_hf",
                   kwargs.get("model_checkpoint_dir", "ModelCheckpoints"),
                   net_arch_id]
 

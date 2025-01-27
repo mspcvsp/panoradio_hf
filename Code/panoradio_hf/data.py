@@ -129,7 +129,7 @@ def get_data_dir(**kwargs):
     path_elems = ["/home",
                   os.getenv("USER"),
                   kwargs.get("data_dir", "Data"),
-                  "panorado_hf"]
+                  "panoradio_hf"]
 
     return Path(*path_elems)
 
