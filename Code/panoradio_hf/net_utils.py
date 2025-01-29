@@ -245,7 +245,7 @@ def init_snrid_accuracy(snrid_clf_report):
     snrid_acc = pd.DataFrame(snrid_acc)
     snrid_acc.reset_index(inplace=True)
 
-    snrid_acc.rename(columns={0: "ccnn",
+    snrid_acc.rename(columns={0: "accuracy",
                               "index": "snrid"}, inplace=True)
 
     snrid_acc["snr"] =\
