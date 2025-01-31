@@ -312,7 +312,7 @@ def plot_stft(tms,
     mpl.style.use("seaborn-v0_8-paper")
 
     h_f, h_ax = plt.subplots(3, 6,
-                             figsize=(8, 6),
+                             figsize=(9, 6),
                              sharex=True,
                              sharey=True,
                              layout="compressed")
@@ -380,30 +380,15 @@ def plot_modeid_inphase(modeid_index,
         (# of signals) x (# of I/Q samples) numpy array that stores the
         training I/Q data
 
-    kwargs: dict
-        Dicationary that stores optional parameters
-
-        modeids_to_plot: list
-            List of string that refers to three modulation mode identifiers
-            to plot
-
     Returns
     -------
     None
     """
-    mpl.style.use("seaborn-v0_8-poster")
-
-    px = 1 / plt.rcParams['figure.dpi']  # pixel in inches
-
-    modeids_to_plot =\
-        kwargs.get("modeids_to_plot",
-                   ["morse", "psk31", "olivia32_1000"])
-
     vmin = sys.float_info.max
     vmax = sys.float_info.min
     modeid_inphase = {}
 
-    for cur_modeid in modeids_to_plot:
+    for cur_modeid in modeid_index.keys():
 
         modeid_inphase[cur_modeid] =\
             init_modeid_inphase(cur_modeid,
@@ -419,54 +404,64 @@ def plot_modeid_inphase(modeid_index,
         if modeid_vmax > vmax:
             vmax = modeid_vmax
 
-    h_f, h_ax = plt.subplots(1, len(modeids_to_plot),
-                             figsize=(1920 * px, 1080 * px),
+        modeid_list = list(modeid_inphase.keys())
+
+    mpl.style.use("seaborn-v0_8-paper")
+
+    h_f, h_ax = plt.subplots(3, 6,
+                             figsize=(9, 6),
                              sharex=True,
                              sharey=True,
                              layout="compressed")
+
     delta_t_ms = 1e3 / 6e3
-    nsamples_to_plot = 16
+    nsamples_to_plot = kwargs.get("nsamples_to_plot", 10)
     sample_idx = np.arange(nsamples_to_plot) + 1
+    font_size = 10
+    mode_idx = 0
 
-    for col in range(len(h_ax)):
+    for row in range(h_ax.shape[0]):
+        for col in range(h_ax.shape[1]):
 
-        cur_modeid = modeids_to_plot[col]
+            cur_modeid = modeid_list[mode_idx]
 
-        cur_modeid_inphase =\
-            modeid_inphase[cur_modeid][:nsamples_to_plot, :]
+            cur_modeid_inphase =\
+                modeid_inphase[cur_modeid][:nsamples_to_plot, :]
 
-        tms = np.arange(cur_modeid_inphase.shape[1]) * delta_t_ms
+            tms = np.arange(cur_modeid_inphase.shape[1]) * delta_t_ms
 
-        h_img =\
-            h_ax[col].pcolormesh(tms,
-                                 sample_idx,
-                                 cur_modeid_inphase,
-                                 vmin=vmin,
-                                 vmax=vmax,
-                                 cmap=cm.viola)
+            h_img =\
+                h_ax[row, col].pcolormesh(tms,
+                                          sample_idx,
+                                          cur_modeid_inphase,
+                                          vmin=vmin,
+                                          vmax=vmax,
+                                          cmap=cm.viola)
 
-        h_ax[col].invert_yaxis()
-        h_ax[col].set_title(cur_modeid,
-                            fontsize=22,
-                            fontweight="bold")
+            h_ax[row, col].invert_yaxis()
+            h_ax[row, col].set_title(cur_modeid,
+                                     fontsize=font_size,
+                                     fontweight="bold")
 
-        h_ax[col].set_xlabel("Time [ms]",
-                             fontsize=22,
-                             fontweight="bold")
+            h_ax[row, col].set_xlabel("Time [ms]",
+                                      fontsize=font_size,
+                                      fontweight="bold")
 
-        for tick in h_ax[col].xaxis.get_majorticklabels():
-            tick.set_fontweight('bold')
-            tick.set_fontsize(22)
-
-        if col == 0:
-
-            h_ax[col].set_ylabel("Sample #",
-                                 fontsize=22,
-                                 fontweight="bold")
-
-            for tick in h_ax[col].yaxis.get_majorticklabels():
+            for tick in h_ax[row, col].xaxis.get_majorticklabels():
                 tick.set_fontweight('bold')
-                tick.set_fontsize(22)
+                tick.set_fontsize(font_size)
+
+            if col == 0:
+
+                h_ax[row, col].set_ylabel("Sample #",
+                                          fontsize=font_size,
+                                          fontweight="bold")
+
+            for tick in h_ax[row, col].yaxis.get_majorticklabels():
+                tick.set_fontweight('bold')
+                tick.set_fontsize(font_size)
+
+            mode_idx = mode_idx + 1
 
     cbar = h_f.colorbar(h_img,
                         ax=h_ax.ravel().tolist(),
@@ -475,7 +470,7 @@ def plot_modeid_inphase(modeid_index,
 
     for tick in cbar.ax.yaxis.get_major_ticks():
         tick.label2.set_fontweight('bold')
-        tick.label2.set_fontsize(22)
+        tick.label2.set_fontsize(font_size)
 
     plt.savefig("inphase.png",
                 bbox_inches="tight")

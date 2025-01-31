@@ -6,13 +6,18 @@ from pathlib import Path
 import joblib as jl
 import numpy as np
 import pandas as pd
+import lightning as pl
 import torch.nn as nn
 import torch.nn.init as init
 from sklearn.metrics import classification_report, confusion_matrix
 from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 from lightning.pytorch.loggers import MLFlowLogger
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
-from .data import get_data_dir
+from .data import get_data_dir, IQDataModel
+from panoradio_hf.ccnn import ClassicalCNN
+from panoradio_hf.deepcnn import DeepCNN
+from panoradio_hf.resnet import ResidualNetwork
+from panoradio_hf.allconvnet import AllConvNet
 
 
 def init_weights(m):
@@ -252,3 +257,43 @@ def init_snrid_accuracy(snrid_clf_report):
         snrid_acc["snrid"].apply(lambda elem: parse_snrid(elem))
 
     return snrid_acc
+
+
+def evaluate_model_performance(modelid_checkpoint_map,
+                               **kwargs):
+
+    trainer = pl.Trainer()
+    datamodule = IQDataModel(**kwargs)
+    snrid_acc = []
+
+    for modelid in modelid_checkpoint_map.keys():
+
+        model_checkpoint_pth = get_model_checkpoint_dir(modelid)
+        checkpoint_file = modelid_checkpoint_map[modelid]
+
+        model_checkpoint_pth =\
+            model_checkpoint_pth.joinpath(checkpoint_file)
+
+        if modelid == "classical-cnn":
+            model = ClassicalCNN.load_from_checkpoint(model_checkpoint_pth)
+        # -----------------------------------------
+        elif modelid == "all-conv-net":
+            model = AllConvNet.load_from_checkpoint(model_checkpoint_pth)
+        # -----------------------------------------
+        elif modelid == "deep-cnn":
+            model = DeepCNN.load_from_checkpoint(model_checkpoint_pth)
+        # -----------------------------------------
+        elif modelid == "resnet":
+            model = ResidualNetwork.load_from_checkpoint(model_checkpoint_pth)
+
+        predictions = trainer.predict(model,
+                                      datamodule=datamodule)
+
+        snrid_clf_report, _ =\
+            evaluate_model_predictions(predictions)
+
+        model_snrid_acc = init_snrid_accuracy(snrid_clf_report)
+        model_snrid_acc["modelid"] = modelid
+        snrid_acc.append(model_snrid_acc)
+
+    return pd.concat(snrid_acc)
