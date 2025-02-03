@@ -19,12 +19,28 @@ from .net_utils import init_weights
 
 class AllConvNet(pl.LightningModule):
     """
-    Automatic Modulation Classification (AMC) Convolutional Neural
-    Network [1]
+    All Convolution Neutral Netwok for Automatic Modulation Classification
+    (AMC) Convolutional Neural Network [1]
     """
     def __init__(self,
                  **kwargs):
+        """
+        AllConvNet class constructor
 
+        Parameters
+        ----------
+        self: AllConvNet class reference
+
+        **kwargs : dict
+            Dictionary that stores optional parameters
+
+            lr : float
+                Learning rate (default value of 1E-3)
+
+        Returns
+        ----------
+        self: AllConvNet class reference
+        """
         super(AllConvNet,
               self).__init__()
 
@@ -180,6 +196,11 @@ class AllConvNet(pl.LightningModule):
             Boolean that controls whether to apply softmax to linear
             layers output. This input should be set to false during
             training to be compatible with CrossEntropy loss
+
+        Returns
+        -------
+        [batch size x number of classes] tensor that stores the
+            predicted classes for each network input
         """
         layer_out = x.clone()
 
@@ -204,13 +225,13 @@ class AllConvNet(pl.LightningModule):
 
         Parameters
         ----------
-        self: ClassicialCNN
-            Classical CNN class object reference
+        self: AllConvNet
+            AllConvNet class object reference
 
         Returns
         ----------
-        self: ClassicialCNN
-            Classical CNN class object reference
+        self: AllConvNet
+            AllConvNet class object reference
         """
         optimizer = optim.Adam(params=self.parameters(),
                                lr=self.optim_params.get("lr", 1E-3))
@@ -221,6 +242,24 @@ class AllConvNet(pl.LightningModule):
                       batch,
                       batch_idx):
         """
+        Implements a Pytorch Lightning module training step
+
+        Parameters
+        ----------
+        self: AllConvNet
+            AllConvNet class object reference
+
+        batch: tuple
+            Tuple that stores batch data, ordinal encoded modulation mode &
+            ordinal encoded Signal-to-Noise Ratio (SNR)
+
+        batch_idx: integer
+            Batch index
+
+        Returns
+        -------
+        train_loss: float
+            Batch training loss
         """
         batch_data, modeordenc, _ = batch
 
@@ -250,6 +289,23 @@ class AllConvNet(pl.LightningModule):
                         batch,
                         batch_idx):
         """
+        Implements a Pytorch Lightning module validation step
+
+        Parameters
+        ----------
+        self: AllConvNet
+            AllConvNet class object reference
+
+        batch: tuple
+            Tuple that stores batch data, ordinal encoded modulation mode &
+            ordinal encoded Signal-to-Noise Ratio (SNR)
+
+        batch_idx: integer
+            Batch index
+
+        Returns
+        -------
+        None
         """
         batch_data, modeordenc, _ = batch
 
@@ -275,6 +331,33 @@ class AllConvNet(pl.LightningModule):
                      batch,
                      batch_idx):
         """
+        Implements a Pytorch Lightning module prediction step
+
+        Parameters
+        ----------
+        self: AllConvNet
+            AllConvNet class object reference
+
+        batch: tuple
+            Tuple that stores batch data, ordinal encoded modulation mode &
+            ordinal encoded Signal-to-Noise Ratio (SNR)
+
+        batch_idx: integer
+            Batch index
+
+        Returns
+        -------
+        predictions : Tensor
+            [Batch size x number of classes] tensor that stores batch 
+            class predicitions
+
+        modeordenc : Tensor
+            [Batch size x 1] tensor that stores the ordinal encoded
+            modulation mode
+
+        snrordenc : Tensor
+            [Batch size x 1] tensor that stores the ordinal encoded
+            Signal-to-Noise Ratio (SNR)
         """
         batch_data, modeordenc, snrordenc = batch
 
@@ -286,6 +369,23 @@ class AllConvNet(pl.LightningModule):
                   batch,
                   batch_idx):
         """
+        Implements a Pytorch Lightning module test step
+
+        Parameters
+        ----------
+        self: AllConvNet
+            AllConvNet class object reference
+
+        batch: tuple
+            Tuple that stores batch data, ordinal encoded modulation mode &
+            ordinal encoded Signal-to-Noise Ratio (SNR)
+
+        batch_idx: integer
+            Batch index
+
+        Returns
+        -------
+        None
         """
         batch_data, modeordenc, _ = batch
 
@@ -310,6 +410,23 @@ class AllConvNet(pl.LightningModule):
     def init_target(self,
                     modeordenc):
         """
+        Initializes a tensor that stores target predicted class confidence
+        (for the cross entropy loss) given a batch's ordinal encoded
+        modulation mode
+
+        Parameters:
+        ----------
+        self: AllConvNet
+            AllConvNet class object reference
+
+        modeordenc : Tensor
+            [Batch size x 1] tensor that stores the ordinal encoded
+            modulation mode
+
+        Returns
+        -------
+        Tensor that stores target predicted class confidence (for the cross
+        entropy loss) given a batch's ordinal encoded modulation mode
         """
         shape2d = [len(modeordenc), self.num_classes]
 
