@@ -145,7 +145,7 @@ def init_plot_index(modeid_index,
         Dictionary that stores optional parameters
 
         pick_random_sample : bool
-            Set to True to pixek random modeid samples
+            Set to True to plot random modeid samples
 
         fixed_sample_idx : int
             Fixed sample index that should be less than the
@@ -478,6 +478,18 @@ def plot_modeid_inphase(modeid_index,
 
 def plot_fft_spectrum(batch_data):
     """
+    Plots a heatmap that illustrates the dB FFT magnitude spectrum for a
+    batch
+
+    Parameters
+    ----------
+    batch_data: numpy.ndarray
+        [batch size x 2 x # of samples] numpy nd-array that stores
+        the (I / Q) signal samples corresponding to a batch
+
+    Returns
+    -------
+    None
     """
     mpl.style.use("seaborn-v0_8-paper")
 

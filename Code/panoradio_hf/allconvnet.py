@@ -348,7 +348,7 @@ class AllConvNet(pl.LightningModule):
         Returns
         -------
         predictions : Tensor
-            [Batch size x number of classes] tensor that stores batch 
+            [Batch size x number of classes] tensor that stores batch
             class predicitions
 
         modeordenc : Tensor
