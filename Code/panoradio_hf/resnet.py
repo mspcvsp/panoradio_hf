@@ -1,5 +1,5 @@
 """
-Modulation classification networks implementation
+"Residual network" modulation classification network implementation
 
 References
 ----------
@@ -17,11 +17,29 @@ from .net_utils import init_weights
 
 
 class ResidualBlock(nn.Module):
+    """
+    Residual network building block class
+    """
 
     def __init__(self,
                  in_channels,
                  out_channels):
+        """
+        Residual block class object constructor
 
+        Parameters
+        ----------
+        self: ResidualBlock
+            ResidualBlock class object reference
+
+        kwargs: dict
+            Stores optional parameters
+
+        Returns
+        -------
+        self: ResidualBlock
+            ResidualBlock class object reference
+        """
         super().__init__()
 
         """
@@ -98,7 +116,22 @@ class ResidualBlock(nn.Module):
 
     def forward(self,
                 x):
+        """
+        Implements the foward pass of a residual network building block
 
+        Parameters
+        ----------
+        self: ResidualBlock
+            ResidualBlock class object reference
+
+        x: torch.Tensor
+            Input tensor
+
+        Returns
+        -------
+        y: torch.Tensor
+            Output tensor
+        """
         layer1_out = self.conv1(x.clone())
         layer2_out = self.conv2(layer1_out)
         sc1_out = self.shortcut1(layer1_out)
@@ -115,9 +148,25 @@ class ResidualNetwork(pl.LightningModule):
     Automatic Modulation Classification (AMC) Convolutional Neural
     Network [1]
     """
+
     def __init__(self,
                  **kwargs):
+        """
+        ResidualNetwork object constructor
 
+        Parameters
+        ----------
+        self: ResidualNetwork
+            ResidualNetwork class object reference
+
+        kwargs: dict
+            Stores optional parameters
+
+        Returns
+        -------
+        self: ResidualNetwork
+            ResidualNetwork class object reference
+        """
         super(ResidualNetwork,
               self).__init__()
 
@@ -177,6 +226,11 @@ class ResidualNetwork(pl.LightningModule):
             Boolean that controls whether to apply softmax to linear
             layers output. This input should be set to false during
             training to be compatible with CrossEntropy loss
+
+        Returns
+        -------
+        [batch size x number of classes] tensor that stores the
+            predicted classes for each network input
         """
         net_output = self.res_stack1(x.clone())
         net_output = self.res_stack2(net_output)
@@ -204,13 +258,13 @@ class ResidualNetwork(pl.LightningModule):
 
         Parameters
         ----------
-        self: ClassicialCNN
-            Classical CNN class object reference
+        self: ResidualNetwork
+            ResidualNetwork CNN class object reference
 
         Returns
         ----------
-        self: ClassicialCNN
-            Classical CNN class object reference
+        self: ResidualNetwork
+            ResidualNetwork CNN class object reference
         """
         optimizer = optim.Adam(params=self.parameters(),
                                lr=self.optim_params.get("lr", 1E-3))
@@ -221,6 +275,24 @@ class ResidualNetwork(pl.LightningModule):
                       batch,
                       batch_idx):
         """
+        Implements a Pytorch Lightning module training step
+
+        Parameters
+        ----------
+        self: ResidualNetwork
+            ResidualNetwork class object reference
+
+        batch: tuple
+            Tuple that stores batch data, ordinal encoded modulation mode &
+            ordinal encoded Signal-to-Noise Ratio (SNR)
+
+        batch_idx: integer
+            Batch index
+
+        Returns
+        -------
+        train_loss: float
+            Batch training loss
         """
         batch_data, modeordenc, _ = batch
 
@@ -250,6 +322,23 @@ class ResidualNetwork(pl.LightningModule):
                         batch,
                         batch_idx):
         """
+        Implements a Pytorch Lightning module validation step
+
+        Parameters
+        ----------
+        self: ResidualNetwork
+            ResidualNetwork class object reference
+
+        batch: tuple
+            Tuple that stores batch data, ordinal encoded modulation mode &
+            ordinal encoded Signal-to-Noise Ratio (SNR)
+
+        batch_idx: integer
+            Batch index
+
+        Returns
+        -------
+        None
         """
         batch_data, modeordenc, _ = batch
 
@@ -275,6 +364,33 @@ class ResidualNetwork(pl.LightningModule):
                      batch,
                      batch_idx):
         """
+        Implements a Pytorch Lightning module prediction step
+
+        Parameters
+        ----------
+        self: ResidualNetwork
+            ResidualNetwork class object reference
+
+        batch: tuple
+            Tuple that stores batch data, ordinal encoded modulation mode &
+            ordinal encoded Signal-to-Noise Ratio (SNR)
+
+        batch_idx: integer
+            Batch index
+
+        Returns
+        -------
+        predictions : Tensor
+            [Batch size x number of classes] tensor that stores batch
+            class predicitions
+
+        modeordenc : Tensor
+            [Batch size x 1] tensor that stores the ordinal encoded
+            modulation mode
+
+        snrordenc : Tensor
+            [Batch size x 1] tensor that stores the ordinal encoded
+            Signal-to-Noise Ratio (SNR)
         """
         batch_data, modeordenc, snrordenc = batch
 
@@ -286,6 +402,23 @@ class ResidualNetwork(pl.LightningModule):
                   batch,
                   batch_idx):
         """
+        Implements a Pytorch Lightning module test step
+
+        Parameters
+        ----------
+        self: Deep CNN
+            Deep CNN class object reference
+
+        batch: tuple
+            Tuple that stores batch data, ordinal encoded modulation mode &
+            ordinal encoded Signal-to-Noise Ratio (SNR)
+
+        batch_idx: integer
+            Batch index
+
+        Returns
+        -------
+        None
         """
         batch_data, modeordenc, _ = batch
 
@@ -310,6 +443,23 @@ class ResidualNetwork(pl.LightningModule):
     def init_target(self,
                     modeordenc):
         """
+        Initializes a tensor that stores target predicted class confidence
+        (for the cross entropy loss) given a batch's ordinal encoded
+        modulation mode
+
+        Parameters:
+        ----------
+        self: Deep CNN
+            Deep CNN class object reference
+
+        modeordenc : Tensor
+            [Batch size x 1] tensor that stores the ordinal encoded
+            modulation mode
+
+        Returns
+        -------
+        Tensor that stores target predicted class confidence (for the cross
+        entropy loss) given a batch's ordinal encoded modulation mode
         """
         shape2d = [len(modeordenc), self.num_classes]
 
