@@ -397,6 +397,18 @@ def init_modeid_waveform_lut():
 
 def iqdata_to_complex(iqdata):
     """
+    Converts interleaved in-phase & quadrature data to complex valued
+    numpy ndarray
+
+    Parameters
+    ----------
+    iqdata: numpy.ndarray
+        Real-valued array that stores interleaved I/Q data
+
+    Returns
+    ------
+    complex_data: numpy.ndarray
+        Complex-valued array that stores I/Q data
     """
     ndims = len(iqdata.shape)
 
@@ -593,10 +605,26 @@ class IQDataset(Dataset):
 
 
 class IQDataModel(pl.LightningDataModule):
+    """
+    I/Q data Pytorch Lighting data module
+    """
 
     def __init__(self,
                  **kwargs):
+        """
+        I/Q data module class constructor
 
+        Parameters
+        ----------
+        self: IQDataModel class reference
+
+        kwargs: dict
+            Optional parameters
+
+        Returns
+        ----------
+        self: IQDataModel class reference
+        """
         super().__init__()
         self.data_dir = kwargs.get("data_dir", "Data")
         self.batch_size = kwargs.get("batch_size", 1024)
@@ -606,7 +634,25 @@ class IQDataModel(pl.LightningDataModule):
                                             "validation")
 
     def setup(self, stage: str):
+        """
+        Method that initializes training, validation & test datasets
 
+        Parameters
+        ----------
+        self: IQDataModel class reference
+
+        stage: str
+            String that identifies the current module development
+            lifecycle stage that can be one of the following strings:
+            - fit
+            - validate
+            - test
+            - predict
+
+        Returns
+        ----------
+        self: IQDataModel class reference
+        """
         self.train = IQDataset("train",
                                data_dir=self.data_dir,
                                transform=IQDataTransformer())
@@ -632,32 +678,95 @@ class IQDataModel(pl.LightningDataModule):
                              f"{self.predict_datasplit}")
 
     def train_dataloader(self):
+        """
+        Returns a training dataset Pytorch Dataloader
 
+        Parameters
+        ----------
+        self: IQDataModel class reference
+
+        Returns
+        -------
+        train_dl: DataLoader
+            DataLoader class
+        """
         return DataLoader(self.train,
                           num_workers=self.num_workers,
                           pin_memory=True,
                           batch_size=self.batch_size)
 
     def val_dataloader(self):
+        """
+        Returns a validation dataset Pytorch Dataloader
 
+        Parameters
+        ----------
+        self: IQDataModel class reference
+
+        Returns
+        -------
+        train_dl: DataLoader
+            DataLoader class
+        """
         return DataLoader(self.validation,
                           num_workers=self.num_workers,
                           pin_memory=True,
                           batch_size=self.batch_size)
 
     def test_dataloader(self):
+        """
+        Returns a test dataset Pytorch Dataloader
 
+        Parameters
+        ----------
+        self: IQDataModel class reference
+
+        Returns
+        -------
+        train_dl: DataLoader
+            DataLoader class
+        """
         return DataLoader(self.test,
                           num_workers=self.num_workers,
                           pin_memory=True,
                           batch_size=self.batch_size)
 
     def predict_dataloader(self):
+        """
+        Returns a predict dataset Pytorch Dataloader
 
+        Parameters
+        ----------
+        self: IQDataModel class reference
+
+        Returns
+        -------
+        train_dl: DataLoader
+            DataLoader class
+        """
         return DataLoader(self.predict,
                           num_workers=self.num_workers,
                           pin_memory=True,
                           batch_size=self.batch_size)
 
     def taredown(self, stage: str):
+        """
+        Class "destructor" method
+
+        Parameters
+        ----------
+        self: IQDataModel class reference
+
+        stage: str
+            String that identifies the current module development
+            lifecycle stage that can be one of the following strings:
+            - fit
+            - validate
+            - test
+            - predict
+
+        Returns
+        ----------
+        None
+        """
         pass
