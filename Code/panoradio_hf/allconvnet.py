@@ -1,5 +1,6 @@
 """
-Modulation classification networks implementation
+"All Convolutional Neural Network" modulation classification
+network implementation
 
 References
 ----------
