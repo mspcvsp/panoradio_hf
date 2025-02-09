@@ -145,7 +145,7 @@ class ResidualBlock(nn.Module):
 
 class ResidualNetwork(pl.LightningModule):
     """
-    Automatic Modulation Classification (AMC) Convolutional Neural
+    Automatic Modulation Classification (AMC) Residual Neural
     Network [1]
     """
 
