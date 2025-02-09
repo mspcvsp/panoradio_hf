@@ -81,7 +81,18 @@ def get_model_checkpoint_dir(net_arch_id,
 
 
 def get_mlflow_tracking_uri():
+    """
+    Returns an MLFlow tracking URI
 
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    mlflow_tracking_uri: str
+        MLFlow tracking URI
+    """
     mlflow_tracking_uri =\
         Path(*["/home",
                os.getenv("USER"),
@@ -92,7 +103,25 @@ def get_mlflow_tracking_uri():
 
 def initialize_pl_trainer(net_arch_id,
                           **kwargs):
+    """
+    Initializes a Pytorch Trainer class object constructor inputs
 
+    Parameters
+    ----------
+    net_arch_id: str
+        String that refers to a deep learning algorithm architecture
+
+    kwargs: dict
+        Optional parameters
+
+    Returns
+    -------
+    callbacks: list
+        List of Pytorch Lighting Trainer callback(s)
+
+    mlf_logger: MLFlowLogger
+        MLFlow logger class object
+    """
     patience = kwargs.get("patience", 5)
     min_delta = kwargs.get("min_delta", 0.01)
 
@@ -122,7 +151,21 @@ def initialize_pl_trainer(net_arch_id,
 
 
 def get_ordenc_intid_lut(ordenc):
+    """
+    Returns a dictionary that stores a mapping between ordinal encoded
+    classes and the corresponding class names
 
+    Parameters
+    ----------
+    ordenc: OrdinalEncoder
+        OrdinalEncoder class object
+
+    Returns
+    -------
+    ordenc_intid_lut: dict
+        Dictionary that stores a mapping between ordinal encoded
+        classes and the corresponding class names
+    """
     values = ordenc.categories_[0]
     enc_values = ordenc.transform(values.reshape(-1, 1))
 
@@ -130,10 +173,23 @@ def get_ordenc_intid_lut(ordenc):
 
 
 class ModelPredictionFormatter(object):
+    """
+    Class that formats model predictions
+    """
 
     def __init__(self,
                  **kwargs):
+        """
+        ModelPredictionFormatter class constructor
 
+        Parameters
+        ----------
+        self: ModelPredictionFormatter
+            ModelPredictionFormatter class object reference
+
+        kwargs: dict
+            Optional parameters
+        """
         data_dir = get_data_dir(**kwargs)
 
         self.mode_ordenc =\
@@ -150,7 +206,23 @@ class ModelPredictionFormatter(object):
 
     def __call__(self,
                  batch_preds):
+        """
+        Formats model predictions
 
+        Parameters
+        ----------
+        self: ModelPredictionFormatter
+            ModelPredictionFormatter class object reference
+
+        batch_preds: list
+            Tuple that stores the estimated modulation model confidence,
+            ordinal encoded true modulation mode & ordinal encoded SNR
+
+        Returns
+        -------
+        batch_preds: pandas.DataFrame
+            Pandas DataFrame that stores formated batch predictions
+        """
         mode_conf_preds =\
             pd.DataFrame(np.array(batch_preds[0]))
 
@@ -184,7 +256,26 @@ class ModelPredictionFormatter(object):
 
 
 def evaluate_model_predictions(predictions):
+    """
+    Generates a classification report and confusion matrix for a set of
+    modulation mode predicitions as a function of SNR
 
+    Parameters
+    ----------
+    predictions: list
+        List of tuples that stores the predicted modulation mode confidence,
+        ordinal encoded modulation mode, and ordinal encoded SNR for each
+        datasplit batch
+
+    Returns
+    -------
+    snrid_clf_report: dict
+        Classification report for each dataset SNR
+
+    confusion_matrix: dict
+        Dictionary of Pandas DataFrames that stores the confusion matrix for
+        each dataset SNR
+    """
     pred_fmt = ModelPredictionFormatter()
 
     mode_conf_preds = \
@@ -224,6 +315,19 @@ def evaluate_model_predictions(predictions):
 
 
 def parse_snrid(snrid):
+    """
+    Parses a string encoded Signal-to-Noise (SNR) level
+
+    Parameters
+    ----------
+    snrid: str
+        String encoded Signal-to-Noise (SNR) level
+
+    Returns
+    -------
+    snr: float
+        Signal-to-Noise (SNR) level
+    """
     snr = snrid.replace("snr", "")
     return float(snr.replace("minus", "-"))
 
@@ -231,7 +335,20 @@ def parse_snrid(snrid):
 def compute_conv1d_lout(l_in,
                         kernel_size,
                         **kwargs):
+    """
+    Computes the number of 1-D convolution output samples
 
+    Parameters
+    ----------
+    l_in: int
+        Number of 1-D convolution input samples
+
+    kerne_size: int
+        1-D convolution kernel size
+
+    kwargs: dict
+        Optional parameters
+    """
     stride = kwargs.get("stride", 1)
     padding = kwargs.get("padding", 0)
     dilation = kwargs.get("dilation", 1)
@@ -242,7 +359,20 @@ def compute_conv1d_lout(l_in,
 
 
 def init_snrid_accuracy(snrid_clf_report):
+    """
+    Initializes a Pandas DataFrame that stores a network's modulation
+    classification as a function of Signal-to-Noise Ratio
 
+    Parameters
+    ----------
+    snrid_clf_report: dict
+        Classification report for each dataset SNR
+
+    Returns
+    -------
+    Pandas DataFrame that stores a network's modulation classification as
+    a function of Signal-to-Noise Ratio
+    """
     snrid_acc =\
         pd.Series({key: snrid_clf_report[key]["accuracy"]
                    for key in snrid_clf_report})
@@ -261,7 +391,18 @@ def init_snrid_accuracy(snrid_clf_report):
 
 def evaluate_model_performance(modelid_checkpoint_map,
                                **kwargs):
+    """
+    Evaluates the performance of a set of trained deep learning models
 
+    Parameters
+    ----------
+    modelid_checkpoint_map: dict
+        Map of network architecture identifiers to the corresponding model
+        checkpoint files
+
+    kwargs: dict
+        Optional parameters
+    """
     trainer = pl.Trainer()
     datamodule = IQDataModel(**kwargs)
     snrid_acc = []

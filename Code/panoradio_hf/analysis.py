@@ -370,6 +370,8 @@ def plot_modeid_inphase(modeid_index,
                         train_data,
                         **kwargs):
     """
+    Plots the inphase samples for a set of signals
+
     Parameters
     ----------
     modeid_index : dict
