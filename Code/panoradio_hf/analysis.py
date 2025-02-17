@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import scipy.signal as ssig
 from scipy.fft import fft, fftshift, fftfreq
+from scipy.signal import stft
 
 
 def compute_stft(data_row,
@@ -534,9 +535,9 @@ def plot_fft_spectrum(batch_data):
 def compute_db_spectrum(signal_samples):
 
     db_spectrum = {}
-    
+
     db_spectrum["value"] =\
-        fft(signal_samples *\
+        fft(signal_samples *
             ssig.windows.hamming(len(signal_samples)))
 
     db_spectrum["value"] = np.abs(fftshift(db_spectrum["value"]))
@@ -576,24 +577,24 @@ def compare_modulations(bpsk_signal,
                        np.imag(qpsk_signal),
                        alpha=0.1,
                        color=qpsk_color)
-    
+
     for row in range(h_ax.shape[0]):
 
         h_ax[row, 0].set_ylim([-10, 50])
         h_ax[row, 1].set_xlim([-2, 2])
         h_ax[row, 1].set_ylim([-2, 2])
-    
+
         h_ax[row, 0].set_xlabel("Normalized Frequency")
         h_ax[row, 0].set_ylabel("dB Magnitude")
-    
+
         h_ax[row, 1].set_xlabel("In-phase")
         h_ax[row, 1].set_ylabel("Quadrature")
-    
+
         for col in range(h_ax.shape[1]):
             h_ax[row, col].grid(True)
-    
+
     for col in range(h_ax.shape[1]):
         h_ax[0, col].set_title("BPSK")
         h_ax[1, col].set_title("QPSK")
-    
+
     h_fig.tight_layout()

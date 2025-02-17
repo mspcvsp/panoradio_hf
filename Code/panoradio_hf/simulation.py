@@ -112,7 +112,7 @@ class AWGNGenerator(object):
         awgn =\
             self.rng.normal(size=nsamples) +\
             1j * self.rng.normal(size=nsamples)
-            
+
         return awgn * np.sqrt(self.noise_var) / np.std(awgn)
 
 
@@ -168,7 +168,7 @@ class BPSKGenerator(object):
             BPSK signal samples
         """
         random_bits = self.bitstream_gen(nsymbols)
-    
+
         bpsk_state =\
             [(-1 if elem > 0.5 else 0) * np.ones(self.samples_per_symbol)
              for elem in random_bits]
@@ -242,7 +242,5 @@ class QPSKGenerator(object):
              for elem in qpsk_phase_states]
 
         qpsk_signal = np.exp(np.concatenate(qpsk_signal))
-        
+
         return qpsk_signal + self.awgn_gen(len(qpsk_signal))
-
-
