@@ -6,9 +6,11 @@ import matplotlib.pyplot as plt
 import sys
 import colorcet as cc
 import cmasher as cm
+import colormaps as cmaps
 import numpy as np
 import pandas as pd
-from scipy.signal import stft
+import scipy.signal as ssig
+from scipy.fft import fft, fftshift, fftfreq
 
 
 def compute_stft(data_row,
@@ -527,3 +529,71 @@ def plot_fft_spectrum(batch_data):
                    label=r"$\bf{dB Magnitude}$")
 
     h_ax.invert_yaxis()
+
+
+def compute_db_spectrum(signal_samples):
+
+    db_spectrum = {}
+    
+    db_spectrum["value"] =\
+        fft(signal_samples *\
+            ssig.windows.hamming(len(signal_samples)))
+
+    db_spectrum["value"] = np.abs(fftshift(db_spectrum["value"]))
+    db_spectrum["value"] = 20 * np.log10(db_spectrum["value"])
+
+    db_spectrum["normfreqs"] =\
+        fftshift(fftfreq(len(db_spectrum["value"])))
+
+    return db_spectrum
+
+
+def compare_modulations(bpsk_signal,
+                        qpsk_signal):
+
+    bpsk_db_spectrum = compute_db_spectrum(bpsk_signal)
+    qpsk_db_spectrum = compute_db_spectrum(qpsk_signal)
+
+    bpsk_color = cmaps.discrete_Bg.colors[0]
+    qpsk_color = cmaps.discrete_Bg.colors[-1]
+
+    h_fig, h_ax = plt.subplots(2, 2, figsize=(6, 4))
+
+    h_ax[0, 0].plot(bpsk_db_spectrum["normfreqs"],
+                    bpsk_db_spectrum["value"],
+                    color=bpsk_color)
+
+    h_ax[0, 1].scatter(np.real(bpsk_signal),
+                       np.imag(bpsk_signal),
+                       alpha=0.1,
+                       color=bpsk_color)
+
+    h_ax[1, 0].plot(qpsk_db_spectrum["normfreqs"],
+                    qpsk_db_spectrum["value"],
+                    color=qpsk_color)
+
+    h_ax[1, 1].scatter(np.real(qpsk_signal),
+                       np.imag(qpsk_signal),
+                       alpha=0.1,
+                       color=qpsk_color)
+    
+    for row in range(h_ax.shape[0]):
+
+        h_ax[row, 0].set_ylim([-10, 50])
+        h_ax[row, 1].set_xlim([-2, 2])
+        h_ax[row, 1].set_ylim([-2, 2])
+    
+        h_ax[row, 0].set_xlabel("Normalized Frequency")
+        h_ax[row, 0].set_ylabel("dB Magnitude")
+    
+        h_ax[row, 1].set_xlabel("In-phase")
+        h_ax[row, 1].set_ylabel("Quadrature")
+    
+        for col in range(h_ax.shape[1]):
+            h_ax[row, col].grid(True)
+    
+    for col in range(h_ax.shape[1]):
+        h_ax[0, col].set_title("BPSK")
+        h_ax[1, col].set_title("QPSK")
+    
+    h_fig.tight_layout()
